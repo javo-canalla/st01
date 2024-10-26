@@ -1,8 +1,9 @@
+<!-- /userapp/templates/userapp/login.html -->
 <html>
-    <h1> Login here </h1>
-    <form method="POST"autocomplete="off">
+    <h1>Iniciar sesión</h1>
+    <form method="POST" autocomplete="off">
         {% csrf_token %}
-        {{loginform.as_p}}
-        <input type="submit" value="Login"/>
+        {{ loginform.as_p }}
+        <input type="submit" value="Iniciar sesión"/>
     </form>
 </html>

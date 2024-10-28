@@ -1,9 +1,14 @@
 <!-- /userapp/templates/userapp/login.html -->
-<html>
-    <h1>Iniciar sesión</h1>
-    <form method="POST" autocomplete="off">
+{% extends 'userapp/base.html' %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+    <h2>Iniciar Sesión</h2>
+    <form method="post">
         {% csrf_token %}
         {{ loginform.as_p }}
-        <input type="submit" value="Iniciar sesión"/>
+        <button type="submit">Ingresar</button>
     </form>
-</html>
+{% endblock %}
+

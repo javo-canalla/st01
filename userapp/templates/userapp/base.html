@@ -1,0 +1,26 @@
+<!-- /userapp/templates/userapp/base.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Mi Sitio{% endblock %}</title>
+    <!-- Aquí puedes incluir tus enlaces CSS -->
+</head>
+<body>
+    <header>
+        <!-- Aquí puedes colocar tu navegación principal -->
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- El contenido específico de cada página irá aquí -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <!-- Pie de página -->
+    </footer>
+
+    <!-- Aquí puedes incluir tus scripts JS -->
+</body>
+</html>

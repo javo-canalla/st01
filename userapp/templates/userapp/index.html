@@ -1,7 +1,15 @@
 <!-- /userapp/templates/userapp/index.html -->
-<html>
-    <h1>Esta es la página de inicio</h1>  
-    <a href="{% url 'login' %}">Iniciar sesión aquí</a>
+{% extends 'userapp/base.html' %}
+
+{% block title %}Página de Inicio{% endblock %}
+
+{% block content %}
+    <h2>Esta es la página de inicio</h2>
+    {% if not request.user.is_authenticated %}
+        <a href="{% url 'login' %}">Iniciar sesión aquí</a>
+    {% else %}
+        <p>Ya has iniciado sesión.</p>
+    {% endif %}
     <br><br>
     <a href="#">Olvidé mi contraseña</a>
-</html>
+{% endblock %}

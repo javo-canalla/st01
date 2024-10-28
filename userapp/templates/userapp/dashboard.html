@@ -1,5 +1,14 @@
 <!-- /userapp/templates/userapp/dashboard.html -->
-<html>
-    <h1>Este es mi panel de control.</h1>
+{% extends 'userapp/base.html' %}
+
+{% block title %}Panel de Control{% endblock %}
+
+{% block content %}
+    <h2>Este es mi panel de control.</h2>
+
     <a href="{% url 'logout' %}">Cerrar sesión aquí</a>
-</html>
+
+    {% if request.user.user_type == 'admin' %}
+        <a href="{% url 'register' %}">Registrar nuevo usuario</a>
+    {% endif %}
+{% endblock %}

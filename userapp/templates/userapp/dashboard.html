@@ -4,6 +4,8 @@
 {% block content %}
     <h2>Este es mi panel de control.</h2>
     <a href="{% url 'logout' %}">Cerrar sesión aquí</a>
+    <br><br>
+    <a href="{% url 'password_change' %}">Cambiar contraseña</a>
     {% if request.user.user_type == 'admin' %}
         <ul>
             <li><a href="{% url 'register' %}">Registrar nuevo usuario</a></li>

@@ -1,0 +1,12 @@
+<!-- /userapp/templates/userapp/delete_user.html -->
+{% extends 'userapp/base.html' %}
+{% block title %}Eliminar Usuario{% endblock %}
+{% block content %}
+<h2>Eliminar Usuario</h2>
+<p>¿Está seguro que desea eliminar al usuario {{ user.email }}?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Sí, eliminar usuario</button>
+    <a href="{% url 'user_list' %}">Cancelar</a>
+</form>
+{% endblock %}

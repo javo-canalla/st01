@@ -1,8 +1,12 @@
 # /userapp/forms.py
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm, PasswordChangeForm, PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import (
+    AuthenticationForm, UserCreationForm, UserChangeForm,
+    PasswordChangeForm, PasswordResetForm, SetPasswordForm
+)
 from django.utils.translation import gettext_lazy as _
 from .models import CustomUser
+
 
 
 class LoginForm(AuthenticationForm):
@@ -41,6 +45,7 @@ class UserEditForm(UserChangeForm):
             'int_phone': 'Teléfono interno',
             'user_type': 'Tipo de usuario',
         }
+
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     old_password = forms.CharField(

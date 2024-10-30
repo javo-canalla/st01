@@ -20,10 +20,6 @@ from .models import CustomUser
 # Create your views here.
 
 
-def homepage(request):
-    return render(request, 'userapp/index.html')
-
-
 def login(request):
     form = LoginForm()
     if request.method == 'POST':
@@ -46,7 +42,7 @@ def dashboard(request):
 
 def logout(request):
     auth.logout(request)
-    return redirect("homepage")
+    return redirect("login")
 
 
 def is_admin_user(user):

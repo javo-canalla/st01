@@ -1,15 +1,14 @@
 # /userapp/urls.py
 from django.urls import path
 from .views import (
-    login, logout, dashboard, homepage, register, user_list, edit_user, delete_user,
+    login, logout, dashboard, register, user_list, edit_user, delete_user,
     password_change, password_change_done, password_reset, password_reset_done,
     password_reset_confirm, password_reset_complete
 )
 
 
 urlpatterns = [
-    path('', homepage, name="homepage"),
-    path('login/', login, name="login"),
+    path('', login, name="login"),
     path('logout/', logout, name="logout"),
     path('dashboard/', dashboard, name="dashboard"),
     path('register/', register, name='register'),

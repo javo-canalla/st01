@@ -6,7 +6,10 @@
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Guardar Cambios</button>
+    <div class="d-flex justify-content-between mt-3">
+        <a href="{% url 'user_list' %}" class="btn btn-secondary">Volver a la lista de usuarios</a>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </div>
 </form>
-<a href="{% url 'user_list' %}">Volver a la lista de usuarios</a>
+
 {% endblock %}

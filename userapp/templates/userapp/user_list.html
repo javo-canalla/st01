@@ -1,32 +1,37 @@
 <!-- /userapp/templates/userapp/user_list.html -->
 {% extends 'userapp/base.html' %}
 {% block title %}Lista de Usuarios{% endblock %}
+
 {% block content %}
-<h2>Lista de Usuarios</h2>
-<table border="1">
-    <tr>
-        <th>Email</th>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Teléfono propio</th>
-        <th>Teléfono interno</th>
-        <th>Tipo de usuario</th>
-        <th>Acciones</th>
-    </tr>
-    {% for user in users %}
-    <tr>
-        <td>{{ user.email }}</td>
-        <td>{{ user.name }}</td>
-        <td>{{ user.last_name }}</td>
-        <td>{{ user.phone_number }}</td>
-        <td>{{ user.int_phone }}</td>
-        <td>{{ user.get_user_type_display }}</td>
-        <td>
-            <a href="{% url 'edit_user' user.id %}">Editar</a> |
-            <a href="{% url 'delete_user' user.id %}">Eliminar</a>
-        </td>
-    </tr>
-    {% endfor %}
+<h2 class="text-center">Lista de Usuarios</h2>
+<table class="table table-striped mt-4">
+    <thead class="table-dark">
+        <tr>
+            <th>Email</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Teléfono</th>
+            <th>Interno</th>
+            <th>Tipo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.email }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.last_name }}</td>
+            <td>{{ user.phone_number }}</td>
+            <td>{{ user.int_phone }}</td>
+            <td>{{ user.get_user_type_display }}</td>
+            <td>
+                <a href="{% url 'edit_user' user.id %}" class="btn btn-sm btn-warning">Editar</a>
+                <a href="{% url 'delete_user' user.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
-<a href="{% url 'dashboard' %}">Volver al dashboard</a>
+<a href="{% url 'dashboard' %}" class="btn btn-secondary mt-3">Volver al dashboard</a>
 {% endblock %}

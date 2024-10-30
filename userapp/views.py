@@ -32,12 +32,14 @@ def login(request):
                 auth.login(request, user)
                 return redirect("dashboard")
     context = {'loginform': form}
+
     return render(request, 'userapp/login.html', context=context)
 
 
 @login_required(login_url="login")
 def dashboard(request):
-    return render(request, 'userapp/dashboard.html')
+    context = {'is_dashboard': True}
+    return render(request, 'userapp/dashboard.html', context)
 
 
 def logout(request):
@@ -124,7 +126,7 @@ def password_reset(request):
                     c = {
                         'email': user.email,
                         'domain': request.META['HTTP_HOST'],
-                        'site_name': 'Mi Sitio',
+                        'site_name': 'Taller de electrónica - Gestión de órdenes de trabajo',
                         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                         'user': user,
                         'token': default_token_generator.make_token(user),

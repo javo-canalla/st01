@@ -1,16 +1,17 @@
 <!-- /userapp/templates/userapp/login.html -->
 {% extends 'userapp/base.html' %}
-
 {% block title %}Iniciar Sesión{% endblock %}
 
 {% block content %}
-    <h2>Iniciar Sesión</h2>
-    <form method="post">
+<div class="col-md-6 offset-md-3">
+    <h2 class="text-center">Iniciar Sesión</h2>
+    <form method="post" class="mt-4">
         {% csrf_token %}
         {{ loginform.as_p }}
-        <button type="submit">Ingresar</button>
+        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
     </form>
-    <br><br>
-    <a href="{% url 'password_reset' %}">Olvidé mi contraseña</a>
+    <div class="text-center mt-3">
+        <a href="{% url 'password_reset' %}">Olvidé mi contraseña</a>
+    </div>
+</div>
 {% endblock %}
-

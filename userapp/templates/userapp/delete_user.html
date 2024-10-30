@@ -6,7 +6,9 @@
 <p>¿Está seguro que desea eliminar al usuario {{ user.email }}?</p>
 <form method="post">
     {% csrf_token %}
-    <button type="submit">Sí, eliminar usuario</button>
-    <a href="{% url 'user_list' %}">Cancelar</a>
+    <div class="d-flex justify-content-between mt-3">
+        <a href="{% url 'user_list' %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Sí, eliminar usuario</button>
+    </div>
 </form>
 {% endblock %}

@@ -11,10 +11,14 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib import messages
 from .forms import (
-    LoginForm, UserRegisterForm, UserEditForm,
-    CustomPasswordChangeForm, CustomPasswordResetForm, CustomSetPasswordForm
+    LoginForm, UserRegisterForm, CustomPasswordChangeForm,
+    CustomPasswordResetForm, CustomSetPasswordForm
 )
 from .models import CustomUser
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 
 
 # Create your views here.
@@ -38,8 +42,7 @@ def login(request):
 
 @login_required(login_url="login")
 def dashboard(request):
-    context = {'is_dashboard': True}
-    return render(request, 'userapp/dashboard.html', context)
+    return render(request, 'userapp/dashboard.html')
 
 
 def logout(request):
@@ -67,20 +70,6 @@ def user_list(request):
     users = CustomUser.objects.all()
     context = {'users': users}
     return render(request, 'userapp/user_list.html', context)
-
-@user_passes_test(is_admin_user, login_url='login')
-def edit_user(request, user_id):
-    user = get_object_or_404(CustomUser, id=user_id)
-    if request.method == 'POST':
-        form = UserEditForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Usuario actualizado correctamente.')
-            return redirect('user_list')
-    else:
-        form = UserEditForm(instance=user)
-    context = {'form': form}
-    return render(request, 'userapp/edit_user.html', context)
 
 @user_passes_test(is_admin_user, login_url='login')
 def delete_user(request, user_id):
@@ -170,3 +159,22 @@ def password_reset_confirm(request, uidb64=None, token=None):
 
 def password_reset_complete(request):
     return render(request, 'userapp/password_reset_complete.html')
+
+@csrf_exempt
+def save_user_changes(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        for user_data in data.get('users', []):
+            try:
+                user = CustomUser.objects.get(id=user_data['id'])
+                user.email = user_data['email']
+                user.name = user_data['name']
+                user.last_name = user_data['last_name']
+                user.phone_number = user_data['phone_number']
+                user.int_phone = user_data['int_phone']
+                user.user_type = user_data['user_type']
+                user.save()
+            except CustomUser.DoesNotExist:
+                return JsonResponse({'success': False})
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})

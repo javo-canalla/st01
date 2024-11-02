@@ -14,11 +14,11 @@ from .forms import (
     LoginForm, UserRegisterForm, CustomPasswordChangeForm,
     CustomPasswordResetForm, CustomSetPasswordForm
 )
+from django.contrib.messages import get_messages
 from .models import CustomUser
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-
 
 
 # Create your views here.
@@ -53,6 +53,7 @@ def logout(request):
 def is_admin_user(user):
     return user.user_type == 'admin'
 
+
 @user_passes_test(is_admin_user, login_url='login')
 def register(request):
     if request.method == 'POST':
@@ -65,11 +66,13 @@ def register(request):
     context = {'form': form}
     return render(request, 'userapp/register.html', context)
 
+
 @user_passes_test(is_admin_user, login_url='login')
 def user_list(request):
     users = CustomUser.objects.all()
     context = {'users': users}
     return render(request, 'userapp/user_list.html', context)
+
 
 @user_passes_test(is_admin_user, login_url='login')
 def delete_user(request, user_id):
@@ -84,23 +87,28 @@ def delete_user(request, user_id):
     context = {'user': user}
     return render(request, 'userapp/delete_user.html', context)
 
+
 @login_required(login_url="login")
 def password_change(request):
     if request.method == 'POST':
         form = CustomPasswordChangeForm(user=request.user, data=request.POST)
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)  # Importante para mantener la sesión
-            messages.success(request, 'Tu contraseña ha sido cambiada exitosamente.')
+            # Importante para mantener la sesión
+            update_session_auth_hash(request, user)
+            messages.success(
+                request, 'Tu contraseña ha sido cambiada exitosamente.')
             return redirect('password_change_done')
     else:
         form = CustomPasswordChangeForm(user=request.user)
     context = {'form': form}
     return render(request, 'userapp/password_change.html', context)
 
+
 @login_required(login_url="login")
 def password_change_done(request):
     return render(request, 'userapp/password_change_done.html')
+
 
 def password_reset(request):
     if request.method == 'POST':
@@ -122,20 +130,28 @@ def password_reset(request):
                         'protocol': 'http',
                     }
                     email_body = render_to_string(email_template_name, c)
-                    send_mail(subject, email_body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
-                messages.success(request, 'Se ha enviado un correo electrónico con instrucciones para restablecer tu contraseña.')
+                    send_mail(subject, email_body, settings.DEFAULT_FROM_EMAIL, [
+                              user.email], fail_silently=False)
+                messages.success(
+                    request, 'Se ha enviado un correo electrónico con instrucciones para restablecer tu contraseña.')
                 return redirect('password_reset_done')
             else:
-                messages.error(request, 'No existe ninguna cuenta registrada con esa dirección de correo.')
+                messages.error(
+                    request, 'No existe ninguna cuenta registrada con esa dirección de correo.')
     else:
         form = CustomPasswordResetForm()
     context = {'form': form}
     return render(request, 'userapp/password_reset.html', context)
 
+
 def password_reset_done(request):
     return render(request, 'userapp/password_reset_done.html')
 
+
 def password_reset_confirm(request, uidb64=None, token=None):
+    storage = get_messages(request)
+    for _ in storage:
+        pass  # Esto elimina todos los mensajes pendientes en la cola
     UserModel = get_user_model()
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
@@ -147,18 +163,22 @@ def password_reset_confirm(request, uidb64=None, token=None):
             form = CustomSetPasswordForm(user, request.POST)
             if form.is_valid():
                 form.save()
-                messages.success(request, 'Tu contraseña ha sido restablecida exitosamente.')
+                messages.success(
+                    request, 'Tu contraseña ha sido restablecida exitosamente.')
                 return redirect('password_reset_complete')
         else:
             form = CustomSetPasswordForm(user)
         context = {'form': form}
         return render(request, 'userapp/password_reset_confirm.html', context)
     else:
-        messages.error(request, 'El enlace de restablecimiento de contraseña no es válido o ha expirado.')
+        messages.error(
+            request, 'El enlace de restablecimiento de contraseña no es válido o ha expirado.')
         return redirect('password_reset')
+
 
 def password_reset_complete(request):
     return render(request, 'userapp/password_reset_complete.html')
+
 
 @csrf_exempt
 def save_user_changes(request):

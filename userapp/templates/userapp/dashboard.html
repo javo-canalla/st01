@@ -5,7 +5,11 @@
 {% block content %}
 <div class="text-center">
     <h2>Menú de pedidos</h2>
-    <br></br><br></br>
+    <div class="mt-4">
+        <a href="{% url 'create_order' %}" class="btn btn-primary">Crear Pedido</a>
+        <a href="{% url 'order_list' %}" class="btn btn-info">Ver Pedidos</a>
+    </div>
+    <br><br>
     {% if request.user.user_type == 'admin' %}
         <h2>Gestión de usuarios</h2>
         <div class="mt-4">
@@ -15,3 +19,5 @@
     {% endif %}
 </div>
 {% endblock %}
+
+

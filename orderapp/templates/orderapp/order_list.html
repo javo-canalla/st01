@@ -1,0 +1,172 @@
+<!-- /orderapp/templates/orderapp/order_list.html -->
+{% extends 'userapp/base.html' %}
+{% block title %}Mis Pedidos{% endblock %}
+{% block content %}
+<div class="text-center mb-4">
+    <h2>Lista de Pedidos</h2>
+</div>
+
+<div class="container">
+    <!-- Filtro de estado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <label for="status-filter"><strong>Filtrar por estado:</strong></label>
+            <select id="status-filter" class="form-select d-inline-block" style="width: auto;">
+                <option value="all">Todos</option>
+                <option value="pending">Pendiente</option>
+                <option value="assigned">Asignada</option>
+                <option value="completed">Finalizada</option>
+            </select>
+        </div>
+        <div class="flex-grow-1 text-center">
+            <h2 id="title-status">Pedidos Abiertos</h2>
+        </div>
+    </div>
+    
+    {% if orders %}
+        <form id="orderForm" method="post">
+            {% csrf_token %}
+            <div style="max-height: 200px; overflow-y: auto; width: 100%;">
+                <table class="table table-bordered table-striped" style="width: 100%;">
+                    <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th>Fecha Pedido</th>
+                            <th>Nº Orden</th>
+                            <th>Contacto</th>
+                            <th>Urgencia</th>
+                            <th>Ubicación Física</th>
+                            <th>Tipo de Equipo</th>
+                            <th>Asignada</th>
+                            <th>% Realización</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr class="order-row" data-order-id="{{ order.order_number }}" data-status="{{ order.status }}"
+                            data-description="{{ order.failure_description }}"
+                            data-supervisor-comment="{{ order.supervisor_comment }}"
+                            data-technical-report="{{ order.technical_report }}">
+                            <td>{{ order.order_date }}</td>
+                            <td>{{ order.order_number }}</td>
+                            <td>{{ order.contact_email }}</td>
+                            <td>{{ order.get_urgency_display }}</td>
+                            <td>{{ order.physical_location }}</td>
+                            <td>{{ order.equipment_type }}</td>
+                            <td>{{ order.assigned_to }}</td>
+                            <td>{{ order.get_completion_percentage_display }}</td>
+                            <td>{{ order.get_status_display }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    {% else %}
+        <p class="text-center">No tienes pedidos abiertos.</p>
+    {% endif %}
+    
+    <!-- Segunda mitad: Detalles del pedido seleccionado -->
+    <div id="order-details" class="mt-4 p-3 border" style="display: none;">
+        <h4 class="text-center">Detalles del Pedido Seleccionado</h4>
+        <div class="row">
+            <div class="col-md-4">
+                <label><strong>Descripción Falla:</strong></label>
+                <textarea id="description-text" class="form-control" rows="4"></textarea>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Comentario Supervisor:</strong></label>
+                <p id="supervisor-comment-text" style="white-space: pre-wrap;"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Reporte Técnico:</strong></label>
+                <p id="technical-report-text" style="white-space: pre-wrap;"></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botones de acción alineados -->
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Volver al dashboard</a>
+        <button id="save-button" class="btn btn-primary">Guardar</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('.order-row');
+        const detailsSection = document.getElementById('order-details');
+        const descriptionText = document.getElementById('description-text');
+        const supervisorCommentText = document.getElementById('supervisor-comment-text');
+        const technicalReportText = document.getElementById('technical-report-text');
+        const statusFilter = document.getElementById('status-filter');
+        const titleStatus = document.getElementById('title-status');
+        const saveButton = document.getElementById('save-button');
+        let currentOrderId = null;
+
+        // Función para actualizar el título según el filtro
+        function updateTitle() {
+            const selectedStatus = statusFilter.value;
+            if (selectedStatus === 'all') {
+                titleStatus.textContent = 'Todos los Pedidos';
+            } else if (selectedStatus === 'pending') {
+                titleStatus.textContent = 'Pedidos Pendientes';
+            } else if (selectedStatus === 'assigned') {
+                titleStatus.textContent = 'Pedidos Asignados';
+            } else if (selectedStatus === 'completed') {
+                titleStatus.textContent = 'Pedidos Finalizados';
+            }
+        }
+
+        // Filtrar pedidos por estado
+        statusFilter.addEventListener('change', function() {
+            const selectedStatus = this.value;
+            rows.forEach(row => {
+                const rowStatus = row.getAttribute('data-status');
+                row.style.display = (selectedStatus === 'all' || rowStatus === selectedStatus) ? '' : 'none';
+            });
+            detailsSection.style.display = 'none';  // Ocultar detalles al cambiar filtro
+            saveButton.style.display = 'none'; // Ocultar botón guardar
+            updateTitle();  // Actualizar el título según el filtro seleccionado
+        });
+
+        // Mostrar detalles del pedido seleccionado
+        rows.forEach(row => {
+            row.addEventListener('click', function() {
+                detailsSection.style.display = 'block';
+                saveButton.style.display = 'inline-block';  // Mostrar botón al seleccionar un pedido
+                currentOrderId = this.getAttribute('data-order-id');
+                descriptionText.value = this.getAttribute('data-description');
+                supervisorCommentText.textContent = this.getAttribute('data-supervisor-comment');
+                technicalReportText.textContent = this.getAttribute('data-technical-report');
+
+                // Resaltar la fila seleccionada
+                rows.forEach(r => r.classList.remove('table-active'));
+                this.classList.add('table-active');
+            });
+        });
+
+        // Guardar el texto de descripción de falla
+        saveButton.addEventListener('click', function() {
+            fetch("{% url 'update_order_description' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    'order_id': currentOrderId,
+                    'description': descriptionText.value
+                })
+            }).then(response => {
+                if (response.ok) {
+                    alert('Descripción actualizada con éxito.');
+                    location.reload();  // Recargar para mostrar cambios
+                } else {
+                    alert('Hubo un error al guardar la descripción.');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

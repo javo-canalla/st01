@@ -1,0 +1,72 @@
+<!-- /orderapp/templates/orderapp/create_order.html -->
+{% extends 'userapp/base.html' %}
+{% block title %}Crear Pedido{% endblock %}
+{% block content %}
+<div class="text-center mb-4">
+    <h2>Crear Pedido</h2>
+</div>
+
+<form method="post" class="container">
+    {% csrf_token %}
+    <div class="row">
+        <!-- Columna izquierda -->
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form.task.label_tag }}
+                {{ form.task }}
+            </div>
+            <div class="mb-3">
+                {{ form.equipment_type.label_tag }}
+                {{ form.equipment_type }}
+            </div>
+            <div class="mb-3">
+                {{ form.physical_location.label_tag }}
+                {{ form.physical_location }}
+            </div>
+            <div class="mb-3">
+                {{ form.urgency.label_tag }}
+                {{ form.urgency }}
+            </div>
+            <div class="mb-3">
+                {{ form.contact_email.label_tag }}
+                {{ form.contact_email }}
+            </div>
+            <div class="mb-3">
+                {{ form.serial_number.label_tag }}
+                {{ form.serial_number }}
+            </div>
+        </div>
+
+        <!-- Columna derecha -->
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form.conicet_id.label_tag }}
+                {{ form.conicet_id }}
+            </div>
+            <div class="mb-3">
+                {{ form.bill_to.label_tag }}
+                {{ form.bill_to }}
+            </div>
+            <div class="mb-3">
+                {{ form.detail.label_tag }}
+                {{ form.detail }}
+            </div>
+            <div class="mb-3">
+                {{ form.failure_description.label_tag }}
+                {{ form.failure_description }}
+            </div>
+            <div class="mb-3" style="background-color: #949e0077; padding: 10px; border-radius: 5px;">
+                {{ form.sworn_statement.label_tag }}
+                {{ form.sworn_statement }}
+            </div>
+            
+        </div>
+    </div>
+    
+    <!-- Botones de acción alineados -->
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Volver al dashboard</a>
+        <button type="submit" class="btn btn-primary">Generar Pedido</button>
+    </div>
+</form>
+{% endblock %}

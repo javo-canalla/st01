@@ -9,13 +9,31 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .navbar-logo {
-            height: 75px; /* Ajusta la altura del logo según sea necesario */
+            height: 50px; /* Ajusta la altura del logo para que encaje en la barra */
+        }
+
+        /* Ajuste para centrar el contenido entre las barras negras */
+        body, html {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        header, footer {
+            background-color: #000;
+            height: 60px; /* Altura fija igual para ambas barras */
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 20px;
         }
     </style>
 </head>
 <body>
-    <header class="navbar navbar-dark bg-dark py-3">
-        <div class="container-fluid d-flex align-items-center justify-content-between">
+    <header class="navbar navbar-dark">
+        <div class="container-fluid d-flex align-items-center justify-content-between h-100">
             <!-- Logo a la izquierda -->
             <a href="{% url 'dashboard' %}">
                 <img src="{% static 'images/logo.jpg' %}" alt="Logo" class="navbar-logo">
@@ -40,8 +58,8 @@
         {% block content %}{% endblock %}
     </main>
     
-    <footer class="bg-dark text-light text-center py-3 mt-4">
-        <h1 class="text-center text-light m-0"> Taller de electrónica - Gestión de órdenes de trabajo </h1>
+    <footer class="text-light text-center py-3 d-flex align-items-center justify-content-center">
+        <h1 class="text-center text-light m-0" style="font-size: 16px;">Taller de electrónica - Gestión de órdenes de trabajo</h1>
     </footer>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

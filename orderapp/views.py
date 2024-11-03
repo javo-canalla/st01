@@ -96,32 +96,26 @@ def view_orders(request):
     if request.method == "POST":
         for order in orders:
             worker_id = request.POST.get(f'worker_id_{order.order_number}')
-            if worker_id:
-                # Asignar el trabajador y actualizar el estado a "assigned"
+            if worker_id:  # Asignar al trabajador si se seleccionó uno
                 order.assigned_to_id = worker_id
-                if order.status != 'completed':  # No modificar si está en estado 'completed'
+                if order.status != 'completed':  # Cambiar a "assigned" si no está completado
                     order.status = 'assigned'
-            else:
-                # Si no hay trabajador asignado, mantén el estado en "pending" solo si no está "completed"
+            else:  # Sin asignación, establecer en pendiente si no está completado
+                order.assigned_to = None
                 if order.status != 'completed':
                     order.status = 'pending'
 
             # Guardar cualquier cambio realizado en el pedido
-            order.save()  # Asegurarse de que el pedido se guarde con el estado actualizado
+            order.save()
 
-        # Guardar el comentario del supervisor
-        supervisor_comment = request.POST.get('supervisor_comment')
-        if supervisor_comment:
-            for order in orders:
-                order.supervisor_comment = supervisor_comment
-                order.save()
-
+        # Mensaje de éxito y redirección
         messages.success(request, 'Cambios guardados correctamente.')
         return redirect('view_orders')
 
+    # Contexto de la plantilla
     context = {
         'orders': orders,
-        'workers': workers,  # Pasar la lista de trabajadores al contexto
+        'workers': workers,
         'selected_status': status_filter,
     }
     return render(request, 'orderapp/view_orders.html', context)

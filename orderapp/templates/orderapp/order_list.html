@@ -47,7 +47,7 @@
                             data-description="{{ order.failure_description }}"
                             data-supervisor-comment="{{ order.supervisor_comment }}"
                             data-technical-report="{{ order.technical_report }}">
-                            <td>{{ order.order_date }}</td>
+                            <td>{{ order.order_date|date:"d/m/Y" }}</td>
                             <td>{{ order.order_number }}</td>
                             <td>{{ order.contact_email }}</td>
                             <td>{{ order.get_urgency_display }}</td>

@@ -10,6 +10,14 @@
         <a href="{% url 'order_list' %}" class="btn btn-info">Ver Pedidos</a>
     </div>
     <br><br>
+    {% if request.user.user_type == 'supervisor' %}
+        <h2>Menú de asignación de pedidos</h2>
+        <div class="mt-4">
+            <a href="{% url 'assign_orders' %}" class="btn btn-warning">Asignar Pedidos</a>
+            <a href="{% url 'view_orders' %}" class="btn btn-secondary">Ver Pedidos</a>
+        </div>
+    {% endif %}
+    <br><br>
     {% if request.user.user_type == 'admin' %}
         <h2>Gestión de usuarios</h2>
         <div class="mt-4">

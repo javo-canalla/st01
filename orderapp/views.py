@@ -57,11 +57,15 @@ def assign_orders(request):
             if key.startswith('order_id_'):
                 order_id = value
                 worker_id = request.POST.get(f'worker_id_{order_id}')
-                if worker_id:
-                    order = Order.objects.get(order_number=order_id)
+                order = Order.objects.get(order_number=order_id)
+                if worker_id:  # Asignar al trabajador seleccionado
                     worker = CustomUser.objects.get(id=worker_id)
                     order.assigned_to = worker
-                    order.save()
+                    order.status = 'assigned'
+                else:  # Si no hay trabajador seleccionado, dejar sin asignación
+                    order.assigned_to = None
+                    order.status = 'pending'
+                order.save()
         return redirect('dashboard')
     else:
         orders = Order.objects.filter(assigned_to__isnull=True)

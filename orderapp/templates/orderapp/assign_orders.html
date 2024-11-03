@@ -1,6 +1,5 @@
 <!-- /orderapp/templates/orderapp/assign_orders.html -->
 {% extends 'userapp/base.html' %}
-
 {% block title %}Asignar Pedidos{% endblock %}
 
 {% block content %}
@@ -39,14 +38,15 @@
                     data-technical-report="{{ order.technical_report }}">
                     <td>{{ order.order_date|date:"d/m/Y" }}</td>
                     <td>{{ order.order_number }}</td>
-                    <td>{{ order.requester.name }} {{ order.requester.last_name }}</td> <!-- Nombre y apellido del solicitante -->
+                    <td>{{ order.requester.name }} {{ order.requester.last_name }}</td>
                     <td>{{ order.get_urgency_display }}</td>
                     <td>{{ order.physical_location }}</td>
                     <td>{{ order.equipment_type }}</td>
                     <td>
                         <select name="worker_id_{{ order.order_number }}" class="form-select">
+                            <option value="">Sin asignación</option> <!-- Opción sin asignación -->
                             {% for worker in workers %}
-                            <option value="{{ worker.id }}">{{ worker.name }} {{ worker.last_name }}</option>
+                                <option value="{{ worker.id }}">{{ worker.name }} {{ worker.last_name }}</option>
                             {% endfor %}
                         </select>
                     </td>
@@ -54,7 +54,7 @@
                     <input type="hidden" name="order_id_{{ order.order_number }}" value="{{ order.order_number }}">
                 </tr>
                 {% endfor %}
-            </tbody>            
+            </tbody>
         </table>
     </div>
     <div class="d-flex justify-content-between mt-4">
@@ -129,7 +129,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         const rows = document.querySelectorAll('.order-row');
         const detailsSection = document.getElementById('order-details');
-
         const serialNumberText = document.getElementById('serial-number-text');
         const conicetIdText = document.getElementById('conicet-id-text');
         const contactEmailText = document.getElementById('contact-email-text');
@@ -140,7 +139,6 @@
         const requesterIntText = document.getElementById('requester-int-text');
         const requesterEmailText = document.getElementById('requester-email-text');
         const requesterPhoneText = document.getElementById('requester-phone-text');
-
         const failureDescriptionText = document.getElementById('failure-description-text');
         const supervisorCommentText = document.getElementById('supervisor-comment-text');
         const technicalReportText = document.getElementById('technical-report-text');
@@ -150,7 +148,6 @@
             row.addEventListener('click', function() {
                 // Mostrar la sección de detalles
                 detailsSection.style.display = 'block';
-
                 // Actualizar los campos de detalle con los datos del pedido seleccionado
                 serialNumberText.textContent = this.getAttribute('data-serial-number');
                 conicetIdText.textContent = this.getAttribute('data-conicet-id');
@@ -162,11 +159,10 @@
                 requesterIntText.textContent = this.getAttribute('data-requester-int');
                 requesterEmailText.textContent = this.getAttribute('data-requester-email');
                 requesterPhoneText.textContent = this.getAttribute('data-requester-phone');
-
                 failureDescriptionText.textContent = this.getAttribute('data-failure');
                 supervisorCommentText.value = this.getAttribute('data-supervisor-comment');
                 technicalReportText.value = this.getAttribute('data-technical-report');
-
+                
                 // Resaltar la fila seleccionada
                 rows.forEach(r => r.classList.remove('table-active'));
                 this.classList.add('table-active');

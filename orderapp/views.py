@@ -68,7 +68,7 @@ def assign_orders(request):
                 order.save()
         return redirect('dashboard')
     else:
-        orders = Order.objects.filter(assigned_to__isnull=True)
+        orders = Order.objects.filter(assigned_to__isnull=True).order_by('-order_number')
         workers = CustomUser.objects.filter(user_type='worker')
         return render(request, 'orderapp/assign_orders.html', {'orders': orders, 'workers': workers})
 
@@ -81,13 +81,13 @@ def view_orders(request):
 
     # Filtrar los pedidos por estado
     if status_filter == 'pending':
-        orders = Order.objects.filter(status='pending')
+        orders = Order.objects.filter(status='pending').order_by('-order_number')
     elif status_filter == 'assigned':
-        orders = Order.objects.filter(status='assigned')
+        orders = Order.objects.filter(status='assigned').order_by('-order_number')
     elif status_filter == 'completed':
-        orders = Order.objects.filter(status='completed')
+        orders = Order.objects.filter(status='completed').order_by('-order_number')
     else:
-        orders = Order.objects.all()
+        orders = Order.objects.all().order_by('-order_number')
 
     # Obtener la lista de trabajadores (usuarios de tipo 'worker')
     workers = CustomUser.objects.filter(user_type='worker')

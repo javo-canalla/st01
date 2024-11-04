@@ -94,8 +94,10 @@ def view_orders(request):
 
     # Procesar la solicitud POST para guardar cambios
     if request.method == "POST":
+        print("Datos de la solicitud POST:", request.POST)  # Agregar esta línea
         for order in orders:
             worker_id = request.POST.get(f'worker_id_{order.order_number}')
+            supervisor_comment = request.POST.get(f'supervisor_comment_{order.order_number}')
             if worker_id:  # Asignar al trabajador si se seleccionó uno
                 order.assigned_to_id = worker_id
                 if order.status != 'completed':  # Cambiar a "assigned" si no está completado
@@ -104,6 +106,14 @@ def view_orders(request):
                 order.assigned_to = None
                 if order.status != 'completed':
                     order.status = 'pending'
+            
+            if supervisor_comment is not None:
+                order.supervisor_comment = supervisor_comment
+                    
+            order.save()
+            print(worker_id)
+            print(supervisor_comment)
+                    
 
             # Guardar cualquier cambio realizado en el pedido
             order.save()

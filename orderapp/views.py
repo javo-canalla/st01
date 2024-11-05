@@ -69,7 +69,7 @@ def assign_orders(request):
         return redirect('dashboard')
     else:
         orders = Order.objects.filter(assigned_to__isnull=True).order_by('-order_number')
-        workers = CustomUser.objects.filter(user_type='worker')
+        workers = CustomUser.objects.filter(user_type__in=['worker', 'supervisor'])
         return render(request, 'orderapp/assign_orders.html', {'orders': orders, 'workers': workers})
 
 
@@ -90,7 +90,8 @@ def view_orders(request):
         orders = Order.objects.all().order_by('-order_number')
 
     # Obtener la lista de trabajadores (usuarios de tipo 'worker')
-    workers = CustomUser.objects.filter(user_type='worker')
+    workers = CustomUser.objects.filter(user_type__in=['worker', 'supervisor'])
+
 
     # Procesar la solicitud POST para guardar cambios
     if request.method == "POST":

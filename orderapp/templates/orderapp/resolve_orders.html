@@ -1,0 +1,186 @@
+<!-- /orderapp/templates/orderapp/resolve_orders.html -->
+{% extends 'userapp/base.html' %}
+{% block title %}Resolver Pedidos{% endblock %}
+
+{% block content %}
+<h2>Resolver Pedidos</h2>
+<form method="post" action="{% url 'resolve_orders' %}">
+    {% csrf_token %}
+    <div style="max-height: 200px; overflow-y: auto; width: 100%;">
+        <table class="table table-bordered table-striped" style="width: 100%;">
+            <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                    <th>Fecha Pedido</th>
+                    <th>Nº Orden</th>
+                    <th>Solicitante</th>
+                    <th>Urgencia</th>
+                    <th>Ubicación</th>
+                    <th>Tipo de Equipo</th>
+                    <th>Asignada</th>
+                    <th>% Realización</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr class="order-row" 
+                    data-order="{{ order.order_number }}"
+                    data-serial-number="{{ order.serial_number }}"
+                    data-conicet-id="{{ order.conicet_id }}"
+                    data-contact-email="{{ order.contact_email }}"
+                    data-bill-to="{{ order.get_bill_to_display }}"
+                    data-end-date="{{ order.end_date }}"
+                    data-detail="{{ order.detail }}"
+                    data-task="{{ order.get_task_display }}"
+                    data-requester-int="{{ order.requester.int_phone }}"
+                    data-requester-email="{{ order.requester.email }}"
+                    data-requester-phone="{{ order.requester.phone_number }}"
+                    data-failure="{{ order.failure_description }}"
+                    data-supervisor-comment="{{ order.supervisor_comment }}"
+                    data-technical-report="{{ order.technical_report }}">
+                    
+                    <!-- Otros campos en la tabla -->
+                    <td>{{ order.order_date|date:"d/m/Y" }}</td>
+                    <td>{{ order.order_number }}</td>
+                    <td>{{ order.requester.name }} {{ order.requester.last_name }}</td>
+                    <td>{{ order.get_urgency_display }}</td>
+                    <td>{{ order.physical_location }}</td>
+                    <td>{{ order.equipment_type }}</td>
+                    <td>{{ order.assigned_to }}</td>
+                    <td>
+                        <select name="completion_{{ order.order_number }}" class="form-select">
+                            {% for percentage, display in completion_choices %}
+                                <option value="{{ percentage }}" {% if order.completion_percentage == percentage %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            
+        </table>
+    </div>
+    
+    <!-- Campos adicionales en Detalles del Pedido Seleccionado -->
+    <div id="order-details" class="mt-4 p-3 border" style="display: none;">
+        <h4 class="text-center">Detalles del Pedido Seleccionado</h4>
+        <div class="row">
+            <div class="col-md-4">
+                <label><strong>Número de serie:</strong></label>
+                <p id="serial-number-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Identificación CONICET:</strong></label>
+                <p id="conicet-id-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Email de contacto:</strong></label>
+                <p id="contact-email-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Facturar a:</strong></label>
+                <p id="bill-to-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Fecha finalización:</strong></label>
+                <p id="end-date-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Detalle:</strong></label>
+                <p id="detail-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Tipo tarea:</strong></label>
+                <p id="task-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Interno solicitante:</strong></label>
+                <p id="requester-int-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Email solicitante:</strong></label>
+                <p id="requester-email-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Teléfono propio solicitante:</strong></label>
+                <p id="requester-phone-text"></p>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+
+
+            <div class="col-md-4">
+                <label><strong>Descripción Falla:</strong></label>
+                <p id="failure-description-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Comentario Supervisor:</strong></label>
+                <textarea id="supervisor-comment-text" class="form-control" rows="4" readonly></textarea>
+            </div>
+
+
+            <div class="col-md-4">
+                <label><strong>Reporte Técnico:</strong></label>
+                <textarea id="technical-report-text" class="form-control" rows="4"></textarea>
+            </div>
+
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Volver al dashboard</a>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('.order-row');
+        const detailsSection = document.getElementById('order-details');
+        const serialNumberText = document.getElementById('serial-number-text');
+        const conicetIdText = document.getElementById('conicet-id-text');
+        const contactEmailText = document.getElementById('contact-email-text');
+        const billToText = document.getElementById('bill-to-text');
+        const endDateText = document.getElementById('end-date-text');
+        const detailText = document.getElementById('detail-text');
+        const taskText = document.getElementById('task-text');
+        const requesterIntText = document.getElementById('requester-int-text');
+        const requesterEmailText = document.getElementById('requester-email-text');
+        const requesterPhoneText = document.getElementById('requester-phone-text');
+        const failureDescriptionText = document.getElementById('failure-description-text');
+        const supervisorCommentText = document.getElementById('supervisor-comment-text');
+        const technicalReportText = document.getElementById('technical-report-text');
+        let currentOrderId = null;
+    
+        rows.forEach(row => {
+            row.addEventListener('click', function() {
+                currentOrderId = this.getAttribute('data-order');
+                
+                // Mostrar detalles
+                detailsSection.style.display = 'block';
+    
+                // Asignar los valores de los data-attributes a los elementos correspondientes
+                serialNumberText.textContent = this.getAttribute('data-serial-number') || '';
+                conicetIdText.textContent = this.getAttribute('data-conicet-id') || '';
+                contactEmailText.textContent = this.getAttribute('data-contact-email') || '';
+                billToText.textContent = this.getAttribute('data-bill-to') || '';
+                endDateText.textContent = this.getAttribute('data-end-date') || '';
+                detailText.textContent = this.getAttribute('data-detail') || '';
+                taskText.textContent = this.getAttribute('data-task') || '';
+                requesterIntText.textContent = this.getAttribute('data-requester-int') || '';
+                requesterEmailText.textContent = this.getAttribute('data-requester-email') || '';
+                requesterPhoneText.textContent = this.getAttribute('data-requester-phone') || '';
+                failureDescriptionText.textContent = this.getAttribute('data-failure') || '';
+                supervisorCommentText.value = this.getAttribute('data-supervisor-comment') || '';
+    
+                technicalReportText.value = this.getAttribute('data-technical-report') || '';
+                technicalReportText.setAttribute('name', `technical_report_${currentOrderId}`);
+                
+                // Resaltar la fila seleccionada
+                rows.forEach(r => r.classList.remove('table-active'));
+                this.classList.add('table-active');
+            });
+        });
+    });
+</script>
+{% endblock %}

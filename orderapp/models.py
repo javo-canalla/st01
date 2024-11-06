@@ -39,7 +39,7 @@ class Order(models.Model):
     ]
 
     task = models.CharField(max_length=20, choices=TASK_CHOICES)
-    equipment_type = models.CharField(max_length=100)
+    equipment_type = models.CharField(max_length=100, blank=True)
     physical_location = models.CharField(max_length=100)
     urgency = models.CharField(
         max_length=10, choices=URGENCY_CHOICES, default='normal')

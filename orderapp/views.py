@@ -8,6 +8,7 @@ from .models import Order
 from userapp.models import CustomUser
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.db.models import Q
 
 
 def create_order(request):
@@ -68,8 +69,10 @@ def assign_orders(request):
                 order.save()
         return redirect('dashboard')
     else:
-        orders = Order.objects.filter(assigned_to__isnull=True).order_by('-order_number')
-        workers = CustomUser.objects.filter(user_type__in=['worker', 'supervisor'])
+        orders = Order.objects.filter(
+            assigned_to__isnull=True).order_by('-order_number')
+        workers = CustomUser.objects.filter(
+            user_type__in=['worker', 'supervisor'])
         return render(request, 'orderapp/assign_orders.html', {'orders': orders, 'workers': workers})
 
 
@@ -81,24 +84,26 @@ def view_orders(request):
 
     # Filtrar los pedidos por estado
     if status_filter == 'pending':
-        orders = Order.objects.filter(status='pending').order_by('-order_number')
+        orders = Order.objects.filter(
+            status='pending').order_by('-order_number')
     elif status_filter == 'assigned':
-        orders = Order.objects.filter(status='assigned').order_by('-order_number')
+        orders = Order.objects.filter(
+            status='assigned').order_by('-order_number')
     elif status_filter == 'completed':
-        orders = Order.objects.filter(status='completed').order_by('-order_number')
+        orders = Order.objects.filter(
+            status='completed').order_by('-order_number')
     else:
         orders = Order.objects.all().order_by('-order_number')
 
     # Obtener la lista de trabajadores (usuarios de tipo 'worker')
     workers = CustomUser.objects.filter(user_type__in=['worker', 'supervisor'])
 
-
     # Procesar la solicitud POST para guardar cambios
     if request.method == "POST":
-        print("Datos de la solicitud POST:", request.POST)  # Agregar esta línea
         for order in orders:
             worker_id = request.POST.get(f'worker_id_{order.order_number}')
-            supervisor_comment = request.POST.get(f'supervisor_comment_{order.order_number}')
+            supervisor_comment = request.POST.get(
+                f'supervisor_comment_{order.order_number}')
             if worker_id:  # Asignar al trabajador si se seleccionó uno
                 order.assigned_to_id = worker_id
                 if order.status != 'completed':  # Cambiar a "assigned" si no está completado
@@ -107,14 +112,11 @@ def view_orders(request):
                 order.assigned_to = None
                 if order.status != 'completed':
                     order.status = 'pending'
-            
+
             if supervisor_comment is not None:
                 order.supervisor_comment = supervisor_comment
-                    
+
             order.save()
-            print(worker_id)
-            print(supervisor_comment)
-                    
 
             # Guardar cualquier cambio realizado en el pedido
             order.save()
@@ -130,3 +132,83 @@ def view_orders(request):
         'selected_status': status_filter,
     }
     return render(request, 'orderapp/view_orders.html', context)
+
+
+@login_required
+def resolve_orders(request):
+    # Filtrar pedidos asignados al usuario actual que no estén finalizados
+    orders = Order.objects.filter(assigned_to=request.user).exclude(
+        status='completed').order_by('-order_number')
+
+    if request.method == 'POST':
+        for order in orders:
+            completion_percentage = request.POST.get(
+                f'completion_{order.order_number}')
+            technical_report = request.POST.get(
+                f'technical_report_{order.order_number}')
+
+            if completion_percentage is not None:
+                order.completion_percentage = int(completion_percentage)
+                if order.completion_percentage == 100:
+                    order.status = 'completed'
+
+            if technical_report is not None:
+                order.technical_report = technical_report
+
+            order.save()
+
+        messages.success(request, 'Cambios guardados correctamente.')
+        return redirect('dashboard')
+
+    context = {
+        'orders': orders,
+        'completion_choices': Order.COMPLETION_PERCENTAGE_CHOICES,
+    }
+    return render(request, 'orderapp/resolve_orders.html', context)
+
+
+@login_required
+def view_user_orders(request):
+    # Obtener filtro de estado desde la solicitud GET (predeterminado: todos)
+    status_filter = request.GET.get('status_filter', 'all')
+    # Filtrar pedidos según el estado seleccionado y que estén asignados al usuario actual
+    orders = Order.objects.filter(
+        assigned_to=request.user).order_by('-order_number')
+
+    if status_filter == 'pending':
+        orders = orders.filter(status='pending')
+    elif status_filter == 'assigned':
+        orders = orders.filter(status='assigned')
+    elif status_filter == 'completed':
+        orders = orders.filter(status='completed')
+
+    if request.method == 'POST':
+        for order in orders:
+            # Capturar % Realización y Reporte Técnico
+            completion_percentage = request.POST.get(
+                f'completion_{order.order_number}')
+            technical_report = request.POST.get(
+                f'technical_report_{order.order_number}')
+
+            if completion_percentage is not None:
+                order.completion_percentage = int(completion_percentage)
+                # Cambiar estado según el % Realización
+                if order.completion_percentage == 100:
+                    order.status = 'completed'
+                else:
+                    order.status = 'assigned'
+
+            if technical_report is not None:
+                order.technical_report = technical_report
+
+            order.save()
+
+        messages.success(request, 'Cambios guardados correctamente.')
+        return redirect('view_user_orders')
+
+    context = {
+        'orders': orders,
+        'completion_choices': Order.COMPLETION_PERCENTAGE_CHOICES,
+        'selected_status': status_filter,
+    }
+    return render(request, 'orderapp/view_user_orders.html', context)

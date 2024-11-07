@@ -46,6 +46,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     user_type = models.CharField(
         'Tipo de usuario', max_length=10, choices=USER_TYPE_CHOICES, default='common')
 
+    receive_order_emails = models.BooleanField(
+        default=True,
+        verbose_name='Recibir correos de pedidos sin asignación'
+    )
+
     is_active = models.BooleanField('Está activo', default=True)
     is_staff = models.BooleanField('Es personal', default=False)
 

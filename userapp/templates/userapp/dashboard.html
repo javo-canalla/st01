@@ -16,6 +16,14 @@
             <a href="{% url 'assign_orders' %}" class="btn btn-warning">Asignar Pedidos</a>
             <a href="{% url 'view_orders' %}" class="btn btn-secondary">Ver Pedidos</a>
         </div>
+        <form method="post" action="">
+            {% csrf_token %}
+            <div class="form-check mt-3">
+                <input type="checkbox" class="form-check-input" id="receiveEmails" name="receive_order_emails" {% if request.user.receive_order_emails %}checked{% endif %}>
+                <label class="form-check-label" for="receiveEmails">Habilitar/deshabilitar recepción de correos de pedido sin asignación</label>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Guardar Preferencia</button>
+        </form>
     {% endif %}
     <br><br>
     {% if request.user.user_type == 'worker' or request.user.user_type == 'supervisor' %}

@@ -9,6 +9,8 @@ from userapp.models import CustomUser
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 def create_order(request):
@@ -18,6 +20,42 @@ def create_order(request):
             order = form.save(commit=False)
             order.requester = request.user
             order.save()
+
+            # Obtener supervisores para enviar notificación
+            # Filtrar supervisores que tienen habilitada la recepción de correos
+            supervisors = CustomUser.objects.filter(
+                user_type='supervisor', receive_order_emails=True)
+            supervisor_emails = [
+                supervisor.email for supervisor in supervisors]
+
+            # Enviar correo de notificación a los supervisores
+            if supervisor_emails:
+                subject = 'Nuevo pedido ingresado para asignación'
+                message = (
+                    f"Ha ingresado un nuevo pedido que necesita ser asignado.\n\n"
+                    f"Detalles del pedido:\n"
+                    f" - Número de serie: {order.serial_number}\n"
+                    f" - Identificación CONICET: {order.conicet_id}\n"
+                    f" - Email de contacto: {order.contact_email}\n"
+                    f" - Facturar a: {order.get_bill_to_display()}\n"
+                    f" - Fecha de finalización: {order.end_date}\n"
+                    f" - Detalle: {order.detail}\n"
+                    f" - Tipo de tarea: {order.get_task_display()}\n"
+                    f" - Interno solicitante: {order.requester.int_phone}\n"
+                    f" - Email solicitante: {order.requester.email}\n"
+                    f" - Teléfono solicitante: {
+                        order.requester.phone_number}\n"
+                    f" - Descripción de la falla: {
+                        order.failure_description}\n"
+                )
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    supervisor_emails,
+                    fail_silently=False,
+                )
+
             return redirect('dashboard')
     else:
         form = OrderForm()

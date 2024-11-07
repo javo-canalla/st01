@@ -42,6 +42,13 @@ def login(request):
 
 @login_required(login_url="login")
 def dashboard(request):
+    if request.user.user_type == 'supervisor' and request.method == 'POST':
+        receive_emails = request.POST.get('receive_order_emails') == 'on'
+        request.user.receive_order_emails = receive_emails
+        request.user.save()
+        messages.success(
+            request, 'Preferencia de recepción de correos actualizada.')
+
     return render(request, 'userapp/dashboard.html')
 
 

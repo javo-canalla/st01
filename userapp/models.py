@@ -50,6 +50,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         default=True,
         verbose_name='Recibir correos de pedidos sin asignación'
     )
+    
+    receive_assignment_emails = models.BooleanField(
+        default=True,
+        verbose_name='Recibir correos de aviso de asignación de pedidos'
+    )
 
     is_active = models.BooleanField('Está activo', default=True)
     is_staff = models.BooleanField('Es personal', default=False)

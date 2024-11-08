@@ -11,6 +11,8 @@ from django.contrib import messages
 from django.db.models import Q
 from django.core.mail import send_mail
 from django.conf import settings
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 def create_order(request):
@@ -101,6 +103,33 @@ def assign_orders(request):
                     worker = CustomUser.objects.get(id=worker_id)
                     order.assigned_to = worker
                     order.status = 'assigned'
+                    
+                    # Verificar si el usuario asignado tiene habilitada la recepción de correos
+                    if worker.receive_assignment_emails:
+                        # Enviar correo al usuario asignado
+                        subject = 'Pedido Asignado'
+                        message = (
+                            f"Ha sido asignado un nuevo pedido.\n\n"
+                            f"Detalles del pedido:\n"
+                            f" - Número de serie: {order.serial_number}\n"
+                            f" - Identificación CONICET: {order.conicet_id}\n"
+                            f" - Email de contacto: {order.contact_email}\n"
+                            f" - Facturar a: {order.get_bill_to_display()}\n"
+                            f" - Fecha de finalización: {order.end_date}\n"
+                            f" - Detalle: {order.detail}\n"
+                            f" - Tipo de tarea: {order.get_task_display()}\n"
+                            f" - Interno solicitante: {order.requester.int_phone}\n"
+                            f" - Email solicitante: {order.requester.email}\n"
+                            f" - Teléfono solicitante: {order.requester.phone_number}\n"
+                            f" - Descripción de la falla: {order.failure_description}\n"
+                        )
+                        send_mail(
+                            subject,
+                            message,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [worker.email],
+                            fail_silently=False,
+                        )
                 else:  # Si no hay trabajador seleccionado, dejar sin asignación
                     order.assigned_to = None
                     order.status = 'pending'
@@ -112,6 +141,7 @@ def assign_orders(request):
         workers = CustomUser.objects.filter(
             user_type__in=['worker', 'supervisor'])
         return render(request, 'orderapp/assign_orders.html', {'orders': orders, 'workers': workers})
+
 
 
 @login_required

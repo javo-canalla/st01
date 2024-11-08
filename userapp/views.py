@@ -42,12 +42,17 @@ def login(request):
 
 @login_required(login_url="login")
 def dashboard(request):
-    if request.user.user_type == 'supervisor' and request.method == 'POST':
-        receive_emails = request.POST.get('receive_order_emails') == 'on'
-        request.user.receive_order_emails = receive_emails
+    if request.method == 'POST':
+        if request.user.user_type == 'supervisor':
+            receive_order_emails = request.POST.get('receive_order_emails') == 'on'
+            request.user.receive_order_emails = receive_order_emails
+        
+        if request.user.user_type in ['supervisor', 'worker']:
+            receive_assignment_emails = request.POST.get('receive_assignment_emails') == 'on'
+            request.user.receive_assignment_emails = receive_assignment_emails
+        
         request.user.save()
-        messages.success(
-            request, 'Preferencia de recepción de correos actualizada.')
+        messages.success(request, 'Preferencias de recepción de correos actualizadas.')
 
     return render(request, 'userapp/dashboard.html')
 

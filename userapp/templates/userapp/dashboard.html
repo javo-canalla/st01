@@ -16,14 +16,6 @@
             <a href="{% url 'assign_orders' %}" class="btn btn-warning">Asignar Pedidos</a>
             <a href="{% url 'view_orders' %}" class="btn btn-secondary">Ver Pedidos</a>
         </div>
-        <form method="post" action="">
-            {% csrf_token %}
-            <div class="form-check mt-3">
-                <input type="checkbox" class="form-check-input" id="receiveEmails" name="receive_order_emails" {% if request.user.receive_order_emails %}checked{% endif %}>
-                <label class="form-check-label" for="receiveEmails">Habilitar/deshabilitar recepción de correos de pedido sin asignación</label>
-            </div>
-            <button type="submit" class="btn btn-primary mt-2">Guardar Preferencia</button>
-        </form>
     {% endif %}
     <br><br>
     {% if request.user.user_type == 'worker' or request.user.user_type == 'supervisor' %}
@@ -33,6 +25,26 @@
             <a href="{% url 'view_user_orders' %}" class="btn btn-secondary">Ver Pedidos</a>
         </div>
     {% endif %}
+    {% if request.user.user_type == 'supervisor' or request.user.user_type == 'worker' %}
+        <form method="post" action="">
+            {% csrf_token %}
+            {% if request.user.user_type == 'supervisor' %}
+                <div class="form-check mt-3">
+                    <input type="checkbox" class="form-check-input" id="receiveOrderEmails" name="receive_order_emails" {% if request.user.receive_order_emails %}checked{% endif %}>
+                    <label class="form-check-label" for="receiveOrderEmails">Habilitar/deshabilitar recepción de correos de pedido sin asignación</label>
+                </div>
+            {% endif %}
+            
+            <div class="form-check mt-3">
+                <input type="checkbox" class="form-check-input" id="receiveAssignmentEmails" name="receive_assignment_emails" {% if request.user.receive_assignment_emails %}checked{% endif %}>
+                <label class="form-check-label" for="receiveAssignmentEmails">Habilitar/deshabilitar recepción de correos de aviso de asignación de pedidos</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary mt-2">Guardar Preferencias</button>
+        </form>
+    {% endif %}
+
+
     <br><br>
     {% if request.user.user_type == 'admin' %}
         <h2>Gestión de usuarios</h2>

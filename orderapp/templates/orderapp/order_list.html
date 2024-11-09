@@ -44,6 +44,16 @@
                     <tbody>
                         {% for order in orders %}
                         <tr class="order-row" data-order-id="{{ order.order_number }}" data-status="{{ order.status }}"
+                            data-serial-number="{{ order.serial_number }}"
+                            data-conicet-id="{{ order.conicet_id }}"
+                            data-contact-email="{{ order.contact_email }}"
+                            data-bill-to="{{ order.get_bill_to_display }}"
+                            data-end-date="{{ order.end_date }}"
+                            data-detail="{{ order.detail }}"
+                            data-task="{{ order.get_task_display }}"
+                            data-requester-int="{{ order.requester.int_phone }}"
+                            data-requester-email="{{ order.requester.email }}"
+                            data-requester-phone="{{ order.requester.phone_number }}"
                             data-description="{{ order.failure_description }}"
                             data-supervisor-comment="{{ order.supervisor_comment }}"
                             data-technical-report="{{ order.technical_report }}">
@@ -69,6 +79,49 @@
     <!-- Segunda mitad: Detalles del pedido seleccionado -->
     <div id="order-details" class="mt-4 p-3 border" style="display: none;">
         <h4 class="text-center">Detalles del Pedido Seleccionado</h4>
+        <div class="row">
+            <div class="col-md-4">
+                <label><strong>Número de serie:</strong></label>
+                <p id="serial-number-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Identificación CONICET:</strong></label>
+                <p id="conicet-id-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Email de contacto:</strong></label>
+                <p id="contact-email-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Facturar a:</strong></label>
+                <p id="bill-to-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Fecha finalización:</strong></label>
+                <p id="end-date-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Detalle:</strong></label>
+                <p id="detail-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Tipo tarea:</strong></label>
+                <p id="task-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Interno solicitante:</strong></label>
+                <p id="requester-int-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Email solicitante:</strong></label>
+                <p id="requester-email-text"></p>
+            </div>
+            <div class="col-md-4">
+                <label><strong>Teléfono propio solicitante:</strong></label>
+                <p id="requester-phone-text"></p>
+            </div>
+        </div>
+        <hr>        
         <div class="row">
             <div class="col-md-4">
                 <label><strong>Descripción Falla:</strong></label>
@@ -99,14 +152,23 @@
         const descriptionText = document.getElementById('description-text');
         const supervisorCommentText = document.getElementById('supervisor-comment-text');
         const technicalReportText = document.getElementById('technical-report-text');
-        const statusFilter = document.getElementById('status-filter');
-        const titleStatus = document.getElementById('title-status');
+        const serialNumberText = document.getElementById('serial-number-text');
+        const conicetIdText = document.getElementById('conicet-id-text');
+        const contactEmailText = document.getElementById('contact-email-text');
+        const billToText = document.getElementById('bill-to-text');
+        const endDateText = document.getElementById('end-date-text');
+        const detailText = document.getElementById('detail-text');
+        const taskText = document.getElementById('task-text');
+        const requesterIntText = document.getElementById('requester-int-text');
+        const requesterEmailText = document.getElementById('requester-email-text');
+        const requesterPhoneText = document.getElementById('requester-phone-text');
         const saveButton = document.getElementById('save-button');
         let currentOrderId = null;
 
         // Función para actualizar el título según el filtro
         function updateTitle() {
-            const selectedStatus = statusFilter.value;
+            const selectedStatus = document.getElementById('status-filter').value;
+            const titleStatus = document.getElementById('title-status');
             if (selectedStatus === 'all') {
                 titleStatus.textContent = 'Todos los Pedidos';
             } else if (selectedStatus === 'pending') {
@@ -119,7 +181,7 @@
         }
 
         // Filtrar pedidos por estado
-        statusFilter.addEventListener('change', function() {
+        document.getElementById('status-filter').addEventListener('change', function() {
             const selectedStatus = this.value;
             rows.forEach(row => {
                 const rowStatus = row.getAttribute('data-status');
@@ -139,6 +201,18 @@
                 descriptionText.value = this.getAttribute('data-description');
                 supervisorCommentText.textContent = this.getAttribute('data-supervisor-comment');
                 technicalReportText.textContent = this.getAttribute('data-technical-report');
+
+                // Actualizar otros campos
+                serialNumberText.textContent = this.getAttribute('data-serial-number') || '';
+                conicetIdText.textContent = this.getAttribute('data-conicet-id') || '';
+                contactEmailText.textContent = this.getAttribute('data-contact-email') || '';
+                billToText.textContent = this.getAttribute('data-bill-to') || '';
+                endDateText.textContent = this.getAttribute('data-end-date') || '';
+                detailText.textContent = this.getAttribute('data-detail') || '';
+                taskText.textContent = this.getAttribute('data-task') || '';
+                requesterIntText.textContent = this.getAttribute('data-requester-int') || '';
+                requesterEmailText.textContent = this.getAttribute('data-requester-email') || '';
+                requesterPhoneText.textContent = this.getAttribute('data-requester-phone') || '';
 
                 // Resaltar la fila seleccionada
                 rows.forEach(r => r.classList.remove('table-active'));

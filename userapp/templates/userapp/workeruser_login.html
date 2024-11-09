@@ -1,0 +1,38 @@
+<!-- /userapp/templates/userapp/workeruser_login.html -->
+{% extends 'userapp/base.html' %}
+
+{% block title %}Iniciar Sesión - Trabajador/Supervisor{% endblock %}
+
+{% block content %}
+<div class="col-md-6 offset-md-3">
+    <h2 class="text-center">Iniciar Sesión (Trabajador/Supervisor)</h2>
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        <!-- Menú desplegable para seleccionar el usuario -->
+        <div class="mb-3">
+            <label for="user-dropdown" class="form-label">Dirección de correo:</label>
+            <select id="user-dropdown" class="form-select" onchange="document.getElementById('id_username').value = this.value">
+                <option value="">Seleccionar usuario...</option>
+                {% for user in supervisors_and_workers %}
+                    <option value="{{ user.email }}">{{ user.name }} {{ user.last_name }} - {{ user.email }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Campo oculto para el nombre de usuario (rellenado por el menú desplegable) -->
+        <input type="hidden" id="id_username" name="username" required>
+        
+        <!-- Campo de contraseña -->
+        <div class="mb-3">
+            <label for="id_password" class="form-label">Contraseña:</label>
+            <input type="password" name="password" id="id_password" class="form-control">
+        </div>
+
+        <!-- Botón para iniciar sesión -->
+        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+    </form>
+    <div class="text-center mt-3">
+        <a href="{% url 'password_reset' %}">Olvidé mi contraseña</a>
+    </div>
+</div>
+{% endblock %}

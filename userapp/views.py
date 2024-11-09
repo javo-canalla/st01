@@ -1,7 +1,8 @@
 # /userapp/views.py
 from django.contrib.auth.models import auth
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth import authenticate, update_session_auth_hash, get_user_model
+from django.contrib.auth import authenticate, update_session_auth_hash, get_user_model, login as auth_login
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
@@ -44,15 +45,18 @@ def login(request):
 def dashboard(request):
     if request.method == 'POST':
         if request.user.user_type == 'supervisor':
-            receive_order_emails = request.POST.get('receive_order_emails') == 'on'
+            receive_order_emails = request.POST.get(
+                'receive_order_emails') == 'on'
             request.user.receive_order_emails = receive_order_emails
-        
+
         if request.user.user_type in ['supervisor', 'worker']:
-            receive_assignment_emails = request.POST.get('receive_assignment_emails') == 'on'
+            receive_assignment_emails = request.POST.get(
+                'receive_assignment_emails') == 'on'
             request.user.receive_assignment_emails = receive_assignment_emails
-        
+
         request.user.save()
-        messages.success(request, 'Preferencias de recepción de correos actualizadas.')
+        messages.success(
+            request, 'Preferencias de recepción de correos actualizadas.')
 
     return render(request, 'userapp/dashboard.html')
 
@@ -210,3 +214,26 @@ def save_user_changes(request):
                 return JsonResponse({'success': False})
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
+
+
+def workeruser_login(request):
+    form = AuthenticationForm()
+    supervisors_and_workers = CustomUser.objects.filter(
+        user_type__in=['supervisor', 'worker'])
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            auth_login(request, user)
+            # Redirige al dashboard tras iniciar sesión exitosamente
+            return redirect('dashboard')
+        else:
+            form = AuthenticationForm(request, data=request.POST)
+
+    context = {
+        'loginform': form,
+        'supervisors_and_workers': supervisors_and_workers,
+    }
+    return render(request, 'userapp/workeruser_login.html', context)

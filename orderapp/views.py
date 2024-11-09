@@ -73,8 +73,31 @@ def update_order_description(request):
 
         try:
             order = Order.objects.get(order_number=order_id)
-            order.failure_description = new_description
-            order.save()
+            original_description = order.failure_description
+
+            # Verificar si hay un cambio en la descripción
+            if original_description != new_description:
+                order.failure_description = new_description
+                order.save()
+
+                # Enviar correo al usuario asignado si existe
+                if order.assigned_to:
+                    subject = 'Actualización de la descripción de la falla'
+                    message = (
+                        f"El pedido con número de orden {
+                            order.order_number} ha sido actualizado.\n\n"
+                        f"Nueva descripción de la falla:\n{
+                            order.failure_description}\n"
+                        f"Por favor, revise el pedido actualizado."
+                    )
+                    send_mail(
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [order.assigned_to.email],
+                        fail_silently=False,
+                    )
+
             return JsonResponse({'success': True})
         except Order.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Pedido no encontrado.'})

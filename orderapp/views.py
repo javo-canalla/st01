@@ -103,7 +103,7 @@ def assign_orders(request):
                     worker = CustomUser.objects.get(id=worker_id)
                     order.assigned_to = worker
                     order.status = 'assigned'
-                    
+
                     # Verificar si el usuario asignado tiene habilitada la recepción de correos
                     if worker.receive_assignment_emails:
                         # Enviar correo al usuario asignado
@@ -118,10 +118,13 @@ def assign_orders(request):
                             f" - Fecha de finalización: {order.end_date}\n"
                             f" - Detalle: {order.detail}\n"
                             f" - Tipo de tarea: {order.get_task_display()}\n"
-                            f" - Interno solicitante: {order.requester.int_phone}\n"
+                            f" - Interno solicitante: {
+                                order.requester.int_phone}\n"
                             f" - Email solicitante: {order.requester.email}\n"
-                            f" - Teléfono solicitante: {order.requester.phone_number}\n"
-                            f" - Descripción de la falla: {order.failure_description}\n"
+                            f" - Teléfono solicitante: {
+                                order.requester.phone_number}\n"
+                            f" - Descripción de la falla: {
+                                order.failure_description}\n"
                         )
                         send_mail(
                             subject,
@@ -141,7 +144,6 @@ def assign_orders(request):
         workers = CustomUser.objects.filter(
             user_type__in=['worker', 'supervisor'])
         return render(request, 'orderapp/assign_orders.html', {'orders': orders, 'workers': workers})
-
 
 
 @login_required
@@ -169,27 +171,56 @@ def view_orders(request):
     # Procesar la solicitud POST para guardar cambios
     if request.method == "POST":
         for order in orders:
+            # Asegurarse de que no sea None
+            original_supervisor_comment = order.supervisor_comment or ""
+            # Asegurarse de que no sea None
+            original_technical_report = order.technical_report or ""
             worker_id = request.POST.get(f'worker_id_{order.order_number}')
             supervisor_comment = request.POST.get(
-                f'supervisor_comment_{order.order_number}')
-            if worker_id:  # Asignar al trabajador si se seleccionó uno
+                f'supervisor_comment_{order.order_number}', "").strip()
+            technical_report = request.POST.get(
+                f'technical_report_{order.order_number}', "").strip()
+
+            # Bandera para verificar cambios específicos en "Comentario Supervisor" o "Reporte Técnico"
+            changes_in_comments = False
+
+            # Verificar y asignar cambios de trabajador (esto no afecta las notificaciones)
+            if worker_id and worker_id != str(order.assigned_to_id):
                 order.assigned_to_id = worker_id
-                if order.status != 'completed':  # Cambiar a "assigned" si no está completado
-                    order.status = 'assigned'
-            else:  # Sin asignación, establecer en pendiente si no está completado
-                order.assigned_to = None
                 if order.status != 'completed':
-                    order.status = 'pending'
+                    order.status = 'assigned'
 
-            if supervisor_comment is not None:
+            # Verificar si el comentario del supervisor cambió
+            if supervisor_comment and original_supervisor_comment != supervisor_comment:
                 order.supervisor_comment = supervisor_comment
+                changes_in_comments = True  # Marcar que hubo cambio en comentario
 
-            order.save()
+            # Verificar si el reporte técnico cambió
+            if technical_report and original_technical_report != technical_report:
+                order.technical_report = technical_report
+                changes_in_comments = True  # Marcar que hubo cambio en reporte técnico
 
-            # Guardar cualquier cambio realizado en el pedido
-            order.save()
+            # Solo guardar y enviar notificación si hubo cambios específicos en los campos de comentario o reporte
+            if changes_in_comments:
+                order.save()  # Guardar los cambios del pedido
 
-        # Mensaje de éxito y redirección
+                # Enviar notificación por correo
+                subject = "Actualización de Pedido"
+                message = (
+                    f"El pedido con número de orden {
+                        order.order_number} ha sido actualizado.\n\n"
+                    f"Comentario Supervisor: {order.supervisor_comment}\n"
+                    f"Reporte Técnico: {order.technical_report}\n"
+                )
+                recipients = [order.requester.email, order.contact_email]
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    recipients,
+                    fail_silently=False,
+                )
+
         messages.success(request, 'Cambios guardados correctamente.')
         return redirect('view_orders')
 

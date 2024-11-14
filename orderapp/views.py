@@ -264,20 +264,54 @@ def resolve_orders(request):
 
     if request.method == 'POST':
         for order in orders:
+            # Capturar valores originales
+            original_completion_percentage = order.completion_percentage
+            original_technical_report = order.technical_report or ""
+
+            # Capturar nuevos valores del formulario
             completion_percentage = request.POST.get(
                 f'completion_{order.order_number}')
             technical_report = request.POST.get(
-                f'technical_report_{order.order_number}')
+                f'technical_report_{order.order_number}', "").strip()
 
+            changes_made = False  # Bandera para detectar cambios
+
+            # Verificar y actualizar el porcentaje de realización
             if completion_percentage is not None:
-                order.completion_percentage = int(completion_percentage)
-                if order.completion_percentage == 100:
-                    order.status = 'completed'
+                new_percentage = int(completion_percentage)
+                if new_percentage != original_completion_percentage:
+                    order.completion_percentage = new_percentage
+                    # Cambiar estado según el % de realización
+                    if new_percentage == 100:
+                        order.status = 'completed'
+                    else:
+                        order.status = 'assigned'
+                    changes_made = True
 
-            if technical_report is not None:
+            # Verificar y actualizar el reporte técnico
+            if technical_report and technical_report != original_technical_report:
                 order.technical_report = technical_report
+                changes_made = True
 
-            order.save()
+            if changes_made:
+                order.save()  # Guardar los cambios en el pedido
+
+                # Enviar correo a "Email de contacto" y "Email solicitante"
+                subject = "Actualización de Pedido"
+                message = (
+                    f"El pedido con número de orden {
+                        order.order_number} ha sido actualizado.\n\n"
+                    f" - % Realización: {order.completion_percentage}%\n"
+                    f" - Reporte Técnico: {order.technical_report}\n"
+                )
+                recipients = [order.contact_email, order.requester.email]
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    recipients,
+                    fail_silently=False,
+                )
 
         messages.success(request, 'Cambios guardados correctamente.')
         return redirect('dashboard')
@@ -306,24 +340,54 @@ def view_user_orders(request):
 
     if request.method == 'POST':
         for order in orders:
-            # Capturar % Realización y Reporte Técnico
+            # Capturar valores originales
+            original_completion_percentage = order.completion_percentage
+            original_technical_report = order.technical_report or ""
+
+            # Capturar nuevos valores del formulario
             completion_percentage = request.POST.get(
                 f'completion_{order.order_number}')
             technical_report = request.POST.get(
-                f'technical_report_{order.order_number}')
+                f'technical_report_{order.order_number}', "").strip()
 
+            changes_made = False  # Bandera para detectar cambios
+
+            # Verificar y actualizar el porcentaje de realización
             if completion_percentage is not None:
-                order.completion_percentage = int(completion_percentage)
-                # Cambiar estado según el % Realización
-                if order.completion_percentage == 100:
-                    order.status = 'completed'
-                else:
-                    order.status = 'assigned'
+                new_percentage = int(completion_percentage)
+                if new_percentage != original_completion_percentage:
+                    order.completion_percentage = new_percentage
+                    # Cambiar estado según el % de realización
+                    if new_percentage == 100:
+                        order.status = 'completed'
+                    else:
+                        order.status = 'assigned'
+                    changes_made = True
 
-            if technical_report is not None:
+            # Verificar y actualizar el reporte técnico
+            if technical_report and technical_report != original_technical_report:
                 order.technical_report = technical_report
+                changes_made = True
 
-            order.save()
+            if changes_made:
+                order.save()  # Guardar los cambios en el pedido
+
+                # Enviar correo a "Email de contacto" y "Email solicitante"
+                subject = "Actualización de Pedido"
+                message = (
+                    f"El pedido con número de orden {
+                        order.order_number} ha sido actualizado.\n\n"
+                    f" - % Realización: {order.completion_percentage}%\n"
+                    f" - Reporte Técnico: {order.technical_report}\n"
+                )
+                recipients = [order.contact_email, order.requester.email]
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    recipients,
+                    fail_silently=False,
+                )
 
         messages.success(request, 'Cambios guardados correctamente.')
         return redirect('view_user_orders')
